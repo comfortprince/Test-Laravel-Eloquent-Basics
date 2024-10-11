@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -37,7 +39,10 @@ class UserController extends Controller
     {
         // TASK: find a user by $name and $email
         //   if not found, create a user with $name, $email and random password
-        $user = NULL;
+        $user = User::firstOrCreate(
+            ['name'=> $name, 'email'=> $email],
+            ['password' => Hash::make(Str::random(8))]
+        );
 
         return view('users.show', compact('user'));
     }
@@ -46,7 +51,20 @@ class UserController extends Controller
     {
         // TASK: find a user by $name and update it with $email
         //   if not found, create a user with $name, $email and random password
-        $user = NULL; // updated or created user
+        $user = User::where('name', '=', $name) // updated or created user
+            ->first(); 
+        
+        if ($user) {
+            $user = User::update(
+                ['email'=> $email]
+            );    
+        }else {
+            $user = User::create([
+                'name'=> $name,
+                'email'=> $email,
+                'password'=> Hash::make(Str::random(8)),
+            ]);
+        }
 
         return view('users.show', compact('user'));
     }
@@ -58,6 +76,7 @@ class UserController extends Controller
         // $request->users is an array of IDs, ex. [1, 2, 3]
 
         // Insert Eloquent statement here
+        User::destroy($request->users);
 
         return redirect('/')->with('success', 'Users deleted');
     }
