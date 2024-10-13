@@ -54,10 +54,9 @@ class UserController extends Controller
         $user = User::where('name', '=', $name) // updated or created user
             ->first(); 
         
-        if ($user) {
-            $user = User::update(
-                ['email'=> $email]
-            );    
+        if ($user !== NULL) {
+            $user = $user->email = $email;
+            $user->save();    
         }else {
             $user = User::create([
                 'name'=> $name,
